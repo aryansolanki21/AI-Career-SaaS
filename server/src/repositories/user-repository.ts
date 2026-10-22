@@ -55,6 +55,41 @@ export const findUserByEmail = async (email: string): Promise<User | null> => {
   };
 };
 
+export const findUserById = async (id: string): Promise<User | null> => {
+  const result = await pool.query<UserRow>(
+    `SELECT
+       id,
+       email,
+       name,
+       image,
+       subscription,
+       free_requests_used,
+       created_at,
+       updated_at
+     FROM users
+     WHERE id = $1
+     LIMIT 1`,
+    [id],
+  );
+
+  const row = result.rows[0];
+
+  if (!row) {
+    return null;
+  }
+
+  return {
+    id: row.id,
+    email: row.email,
+    name: row.name,
+    image: row.image,
+    subscription: row.subscription,
+    freeRequestsUsed: row.free_requests_used,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+};
+
 export interface CreateUserInput {
   email: string;
   name: string;
