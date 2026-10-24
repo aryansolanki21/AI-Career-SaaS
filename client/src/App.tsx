@@ -1,6 +1,7 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { useAppData } from "./context/useAppData";
 import Navbar from "./components/Navbar";
+import Register from "./pages/Register";
 import Login from "./pages/Login";
 
 const AppContent = () => {
@@ -40,6 +41,7 @@ const AppContent = () => {
         />
 
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
         <Route
           path="*"

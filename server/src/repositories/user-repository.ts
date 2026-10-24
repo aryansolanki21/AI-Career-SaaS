@@ -4,7 +4,7 @@ import type { User } from "../types/user.js";
 
 export class UserEmailAlreadyExistsError extends Error {
   constructor() {
-    super("A user with this email already exists.");
+    super("An account with this email already exists.");
     this.name = "UserEmailAlreadyExistsError";
   }
 }
@@ -13,24 +13,30 @@ interface UserRow extends QueryResultRow {
   id: string;
   email: string;
   name: string;
-  image: string;
+  image: string | null;
+  password_hash: string | null;
   subscription: Date | null;
   free_requests_used: number;
   created_at: Date;
   updated_at: Date;
 }
 
+const mapUser = (row: UserRow): User => ({
+  id: row.id,
+  email: row.email,
+  name: row.name,
+  image: row.image,
+  passwordHash: row.password_hash,
+  subscription: row.subscription,
+  freeRequestsUsed: row.free_requests_used,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
+});
+
 export const findUserByEmail = async (email: string): Promise<User | null> => {
   const result = await pool.query<UserRow>(
-    `SELECT
-       id,
-       email,
-       name,
-       image,
-       subscription,
-       free_requests_used,
-       created_at,
-       updated_at
+    `SELECT id, email, name, image, password_hash, subscription,
+            free_requests_used, created_at, updated_at
      FROM users
      WHERE email = $1
      LIMIT 1`,
@@ -38,34 +44,13 @@ export const findUserByEmail = async (email: string): Promise<User | null> => {
   );
 
   const row = result.rows[0];
-
-  if (!row) {
-    return null;
-  }
-
-  return {
-    id: row.id,
-    email: row.email,
-    name: row.name,
-    image: row.image,
-    subscription: row.subscription,
-    freeRequestsUsed: row.free_requests_used,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
+  return row ? mapUser(row) : null;
 };
 
 export const findUserById = async (id: string): Promise<User | null> => {
   const result = await pool.query<UserRow>(
-    `SELECT
-       id,
-       email,
-       name,
-       image,
-       subscription,
-       free_requests_used,
-       created_at,
-       updated_at
+    `SELECT id, email, name, image, password_hash, subscription,
+            free_requests_used, created_at, updated_at
      FROM users
      WHERE id = $1
      LIMIT 1`,
@@ -73,44 +58,29 @@ export const findUserById = async (id: string): Promise<User | null> => {
   );
 
   const row = result.rows[0];
-
-  if (!row) {
-    return null;
-  }
-
-  return {
-    id: row.id,
-    email: row.email,
-    name: row.name,
-    image: row.image,
-    subscription: row.subscription,
-    freeRequestsUsed: row.free_requests_used,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  };
+  return row ? mapUser(row) : null;
 };
 
 export interface CreateUserInput {
   email: string;
   name: string;
-  image: string;
+  image?: string | null;
+  passwordHash?: string | null;
 }
 
 export const createUser = async (input: CreateUserInput): Promise<User> => {
   try {
     const result = await pool.query<UserRow>(
-      `INSERT INTO users (email, name, image)
-       VALUES ($1, $2, $3)
-       RETURNING
-         id,
-         email,
-         name,
-         image,
-         subscription,
-         free_requests_used,
-         created_at,
-         updated_at`,
-      [input.email, input.name, input.image],
+      `INSERT INTO users (email, name, image, password_hash)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, email, name, image, password_hash, subscription,
+                 free_requests_used, created_at, updated_at`,
+      [
+        input.email,
+        input.name,
+        input.image ?? null,
+        input.passwordHash ?? null,
+      ],
     );
 
     const row = result.rows[0];
@@ -119,16 +89,7 @@ export const createUser = async (input: CreateUserInput): Promise<User> => {
       throw new Error("Failed to create user.");
     }
 
-    return {
-      id: row.id,
-      email: row.email,
-      name: row.name,
-      image: row.image,
-      subscription: row.subscription,
-      freeRequestsUsed: row.free_requests_used,
-      createdAt: row.created_at,
-      updatedAt: row.updated_at,
-    };
+    return mapUser(row);
   } catch (error: unknown) {
     if (
       typeof error === "object" &&

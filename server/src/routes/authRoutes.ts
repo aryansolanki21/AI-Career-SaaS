@@ -1,10 +1,17 @@
-import express from "express";
-import { loginUser, myProfile } from "../controllers/user-controller.js";
+import { Router } from "express";
+import {
+  registerUser,
+  loginUser,
+  loginWithGoogle,
+  getCurrentUser,
+} from "../controllers/user-controller.js";
 import { isAuth } from "../middlewares/auth-middleware.js";
 
-const router = express.Router();
+const router = Router();
 
+router.post("/register", registerUser);
 router.post("/login", loginUser);
-router.get("/me", isAuth, myProfile);
+router.post("/google", loginWithGoogle);
+router.get("/me", isAuth, getCurrentUser);
 
 export default router;
