@@ -1,10 +1,17 @@
 import "dotenv/config";
+import cors from "cors";
 import express, { type ErrorRequestHandler } from "express";
 import { connectDB, pool } from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 
 const app = express();
 const PORT = Number(process.env.PORT ?? 5000);
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+  }),
+);
 
 app.use(express.json());
 
