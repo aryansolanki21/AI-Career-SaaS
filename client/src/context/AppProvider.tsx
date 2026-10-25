@@ -1,16 +1,42 @@
 import axios from "axios";
-import { useEffect, useState, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import toast, { Toaster } from "react-hot-toast";
+
 import type { AppContextType, User } from "../types";
 import AppContext from "./AppContext";
 
 const server = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-interface AppProps {
+interface AppProviderProps {
   children: ReactNode;
 }
 
-export const AppProvider = ({ children }: AppProps) => {
+type ApiUser = Omit<User, "freeRequestsUsed"> & {
+  freeRequestsUsed?: number;
+};
+
+type CurrentUserResponse =
+  | ApiUser
+  | {
+      user: ApiUser;
+    };
+
+const normalizeUser = (data: CurrentUserResponse): User => {
+  const apiUser = "user" in data ? data.user : data;
+
+  return {
+    ...apiUser,
+    freeRequestsUsed: apiUser.freeRequestsUsed ?? 0,
+  };
+};
+
+export const AppProvider = ({ children }: AppProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [isAuth, setIsAuth] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -22,30 +48,36 @@ export const AppProvider = ({ children }: AppProps) => {
       const token = localStorage.getItem("token");
 
       if (!token) {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        setLoading(false);
         return;
       }
 
       try {
-        const { data } = await axios.get(`${server}/api/user/me`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
+        const { data } = await axios.get<CurrentUserResponse>(
+          `${server}/api/user/me`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           },
-        });
+        );
 
-        if (!cancelled) {
-          const currentUser: User = data.user ?? data;
-          setUser(currentUser);
-          setIsAuth(true);
-        }
-      } catch (error) {
-        if (!cancelled) {
-          console.error("Failed to fetch current user:", error);
+        if (cancelled) return;
+
+        setUser(normalizeUser(data));
+        setIsAuth(true);
+      } catch (error: unknown) {
+        if (cancelled) return;
+
+        if (
+          axios.isAxiosError(error) &&
+          (error.response?.status === 401 || error.response?.status === 403)
+        ) {
           localStorage.removeItem("token");
           setUser(null);
           setIsAuth(false);
+        } else {
+          console.error("Failed to restore session:", error);
         }
       } finally {
         if (!cancelled) {
@@ -54,30 +86,32 @@ export const AppProvider = ({ children }: AppProps) => {
       }
     };
 
-    // Defer initialization so the effect doesn't synchronously trigger state updates.
-    void Promise.resolve().then(restoreSession);
+    void restoreSession();
 
     return () => {
       cancelled = true;
     };
   }, []);
 
-  const LogoutUser = () => {
+  const LogoutUser = useCallback(() => {
     localStorage.removeItem("token");
     setUser(null);
     setIsAuth(false);
     toast.success("Logged out successfully");
-  };
+  }, []);
 
-  const contextValue: AppContextType = {
-    user,
-    isAuth,
-    loading,
-    setUser,
-    setIsAuth,
-    setLoading,
-    LogoutUser,
-  };
+  const contextValue: AppContextType = useMemo(
+    () => ({
+      user,
+      isAuth,
+      loading,
+      setUser,
+      setIsAuth,
+      setLoading,
+      LogoutUser,
+    }),
+    [user, isAuth, loading, LogoutUser],
+  );
 
   return (
     <AppContext.Provider value={contextValue}>

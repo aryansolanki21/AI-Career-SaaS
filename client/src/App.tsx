@@ -3,6 +3,7 @@ import { useAppData } from "./context/useAppData";
 import Navbar from "./components/Navbar";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
+import Home from "./pages/Home";
 
 const AppContent = () => {
   const { loading } = useAppData();
@@ -24,22 +25,7 @@ const AppContent = () => {
       <Navbar />
 
       <Routes>
-        <Route
-          path="/"
-          element={
-            <main className="mx-auto min-h-[calc(100vh-64px)] max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-              <h1 className="text-3xl font-bold text-slate-900 sm:text-4xl lg:text-5xl">
-                Build your next career move.
-              </h1>
-
-              <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-                Analyse your resume, discover relevant jobs, and prepare for
-                interviews with AI.
-              </p>
-            </main>
-          }
-        />
-
+        <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 

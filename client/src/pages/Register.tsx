@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useState, type SubmitEventHandler } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
 import axios from "axios";
@@ -6,20 +6,14 @@ import toast from "react-hot-toast";
 import { ArrowRight, Eye, EyeOff } from "lucide-react";
 import { useAppData } from "../context/useAppData";
 import validator from "validator";
+import type { User } from "../types";
 
 const server = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 interface AuthResponse {
   message: string;
   token: string;
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    image: string | null;
-    subscription: string | null;
-    freeRequestsUsed?: number;
-  };
+  user: User;
 }
 
 const Register = () => {
@@ -41,13 +35,14 @@ const Register = () => {
       ...data.user,
       freeRequestsUsed: data.user.freeRequestsUsed ?? 0,
     });
+
     setIsAuth(true);
 
     toast.success(data.message || "Account created successfully.");
     navigate("/", { replace: true });
   };
 
-  const handleRegister = async (event: FormEvent<HTMLFormElement>) => {
+  const handleRegister: SubmitEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault();
 
     const trimmedName = name.trim();
@@ -63,8 +58,23 @@ const Register = () => {
       return;
     }
 
-    if (password.length < 8) {
-      toast.error("Your password must contain at least 8 characters.");
+    const passwordOptions = {
+      minLength: 8,
+      minLowercase: 1,
+      minUppercase: 1,
+      minNumbers: 1,
+      minSymbols: 1,
+    };
+
+    if (new TextEncoder().encode(password).length > 72) {
+      toast.error("Your password must not exceed 72 bytes.");
+      return;
+    }
+
+    if (!validator.isStrongPassword(password, passwordOptions)) {
+      toast.error(
+        "Password must contain at least 8 characters, including uppercase, lowercase, a number, and a symbol.",
+      );
       return;
     }
 
@@ -124,6 +134,7 @@ const Register = () => {
       }
     },
     onError: () => {
+      setIsSubmitting(false);
       toast.error("Google sign-up was cancelled or could not be completed.");
     },
   });
