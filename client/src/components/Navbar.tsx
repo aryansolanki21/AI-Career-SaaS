@@ -1,23 +1,50 @@
 import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import {
-  ArrowUpRight,
   BriefcaseBusiness,
   FileSearch,
   FileText,
   Menu,
   MessageSquareText,
-  Sparkles,
   X,
+  type LucideIcon,
 } from "lucide-react";
 import { useAppData } from "../context/useAppData";
 
-const navigation = [
+interface NavItem {
+  label: string;
+  to: string;
+  icon: LucideIcon;
+}
+
+const NAVIGATION: NavItem[] = [
   { label: "Resume Analysis", to: "/analyse", icon: FileSearch },
   { label: "Job Matching", to: "/jobmatcher", icon: BriefcaseBusiness },
   { label: "Resume Builder", to: "/resumebuilder", icon: FileText },
   { label: "Interview Prep", to: "/interviewprep", icon: MessageSquareText },
 ];
+
+/* Shared class strings keep styling consistent and easy to change in one place. */
+const FOCUS_RING =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700";
+
+const GHOST_BUTTON = `rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-950 ${FOCUS_RING}`;
+
+const PRIMARY_BUTTON = `inline-flex items-center justify-center rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-800 ${FOCUS_RING}`;
+
+const desktopLinkClass = ({ isActive }: { isActive: boolean }) =>
+  `rounded-lg px-3 py-2 text-sm font-medium transition-colors ${FOCUS_RING} ${
+    isActive
+      ? "bg-slate-100 text-slate-950"
+      : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
+  }`;
+
+const mobileLinkClass = ({ isActive }: { isActive: boolean }) =>
+  `flex items-center gap-3 rounded-lg px-3 py-3 text-base font-medium transition-colors ${FOCUS_RING} ${
+    isActive
+      ? "bg-slate-100 text-slate-950"
+      : "text-slate-700 hover:bg-slate-50"
+  }`;
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -25,148 +52,100 @@ const Navbar = () => {
 
   const closeMenu = () => setIsMenuOpen(false);
 
+  // Close the mobile menu with the Escape key.
   useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        closeMenu();
-      }
+      if (event.key === "Escape") setIsMenuOpen(false);
     };
-
     document.addEventListener("keydown", handleEscape);
-
-    return () => {
-      document.removeEventListener("keydown", handleEscape);
-    };
+    return () => document.removeEventListener("keydown", handleEscape);
   }, []);
 
-  const navigationLinkClass = ({ isActive }: { isActive: boolean }) =>
-    `rounded-lg px-2.5 py-2 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 ${
-      isActive
-        ? "bg-indigo-50 text-indigo-700"
-        : "text-slate-600 hover:bg-slate-100 hover:text-slate-950"
-    }`;
-
   const accountInitial = user?.name?.trim().charAt(0).toUpperCase() || "U";
-  const firstName = user?.name?.trim().split(/\s+/)[0] || "My Account";
+  const firstName = user?.name?.trim().split(/\s+/)[0] || "Account";
+
+  const handleLogout = () => {
+    closeMenu();
+    LogoutUser();
+  };
 
   return (
-    <header className="sticky top-0 z-50 border-b border-slate-200/80 bg-white/95 backdrop-blur-xl">
+    <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
       <nav
         aria-label="Main navigation"
-        className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8"
+        className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-6"
       >
+        {/* Logo */}
         <Link
           to="/"
           onClick={closeMenu}
-          className="flex min-w-0 shrink-0 items-center gap-2 sm:gap-2.5"
           aria-label="CareerCraft AI home"
+          className={`flex shrink-0 items-center gap-2.5 rounded-md ${FOCUS_RING}`}
         >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-600 text-white shadow-md shadow-indigo-200 sm:h-10 sm:w-10">
-            <Sparkles size={21} strokeWidth={2.2} />
+          <span
+            aria-hidden="true"
+            className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-700 text-lg font-bold tracking-tight text-white shadow-sm"
+          >
+            C
           </span>
 
-          <span className="whitespace-nowrap text-base font-bold tracking-tight text-slate-900 sm:text-xl">
-            CareerCraft <span className="text-indigo-600">AI</span>
+          <span className="whitespace-nowrap text-lg font-bold tracking-tight text-slate-950">
+            CareerCraft <span className="font-medium text-slate-500">AI</span>
           </span>
         </Link>
 
+        {/* Desktop tool links (signed-in users only) */}
         {isAuth && (
-          <div className="hidden items-center gap-0.5 xl:flex">
-            {navigation.map(({ label, to }) => (
-              <NavLink key={to} to={to} className={navigationLinkClass}>
-                {label}
-              </NavLink>
+          <ul className="hidden items-center gap-1 lg:flex">
+            {NAVIGATION.map(({ label, to }) => (
+              <li key={to}>
+                <NavLink to={to} className={desktopLinkClass}>
+                  {label}
+                </NavLink>
+              </li>
             ))}
-          </div>
+          </ul>
         )}
 
-        <div className="hidden shrink-0 items-center gap-2 xl:flex">
+        {/* Desktop account area */}
+        <div className="hidden shrink-0 items-center gap-2 lg:flex">
           {isAuth ? (
             <>
               <Link
                 to="/account"
-                className="flex max-w-40 items-center gap-2 rounded-xl px-2.5 py-2 transition-colors hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                className={`flex max-w-44 items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-slate-100 ${FOCUS_RING}`}
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-sm font-bold text-indigo-700">
+                <span
+                  aria-hidden="true"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-800"
+                >
                   {accountInitial}
                 </span>
-
-                <span className="truncate text-sm font-semibold text-slate-700">
+                <span className="truncate text-sm font-semibold text-slate-800">
                   {firstName}
                 </span>
               </Link>
-
               <button
                 type="button"
-                onClick={() => {
-                  closeMenu();
-                  LogoutUser();
-                }}
-                className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                onClick={handleLogout}
+                className={GHOST_BUTTON}
               >
-                Sign out
+                Log out
               </button>
             </>
           ) : (
             <>
-              <Link
-                to="/login"
-                className="rounded-lg px-3 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-100 hover:text-slate-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
-              >
-                Sign in
+              <Link to="/login" className={GHOST_BUTTON}>
+                Log in
               </Link>
-
-              <Link
-                to="/register"
-                className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100"
-              >
-                Get started
-                <ArrowUpRight size={16} />
+              <Link to="/register" className={PRIMARY_BUTTON}>
+                Sign up
               </Link>
             </>
           )}
         </div>
 
-        <div className="hidden">
-          {isAuth ? (
-            <>
-              <Link
-                to="/account"
-                aria-label="My account"
-                title={user?.name || "My Account"}
-                className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-sm font-bold text-indigo-700 transition hover:bg-indigo-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
-              >
-                {accountInitial}
-              </Link>
-
-              <button
-                type="button"
-                onClick={LogoutUser}
-                className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
-              >
-                Sign out
-              </button>
-            </>
-          ) : (
-            <>
-              <Link
-                to="/login"
-                className="rounded-lg px-3 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 hover:text-slate-950 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
-              >
-                Sign in
-              </Link>
-
-              <Link
-                to="/register"
-                className="inline-flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100"
-              >
-                Get started
-                <ArrowUpRight size={15} />
-              </Link>
-            </>
-          )}
-        </div>
-
+        {/* Mobile menu toggle */}
         <button
           type="button"
           aria-label={
@@ -174,82 +153,86 @@ const Navbar = () => {
           }
           aria-expanded={isMenuOpen}
           aria-controls="mobile-navigation"
-          onClick={() => setIsMenuOpen((current) => !current)}
-          className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100 xl:hidden"
+          onClick={() => setIsMenuOpen((open) => !open)}
+          className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-300 text-slate-700 transition-colors hover:bg-slate-50 lg:hidden ${FOCUS_RING}`}
         >
-          {isMenuOpen ? <X size={21} /> : <Menu size={21} />}
+          {isMenuOpen ? (
+            <X size={20} aria-hidden="true" />
+          ) : (
+            <Menu size={20} aria-hidden="true" />
+          )}
         </button>
       </nav>
 
+      {/* Mobile menu */}
       {isMenuOpen && (
         <div
           id="mobile-navigation"
-          className="border-t border-slate-200 bg-white px-4 py-5 shadow-lg sm:px-6 xl:hidden"
+          className="border-t border-slate-200 bg-white lg:hidden"
         >
-          <div className="mx-auto flex max-w-7xl flex-col gap-2">
-            {isAuth &&
-              navigation.map(({ label, to, icon: Icon }) => (
-                <NavLink
-                  key={to}
-                  to={to}
-                  onClick={closeMenu}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${
-                      isActive
-                        ? "bg-indigo-50 text-indigo-700"
-                        : "text-slate-700 hover:bg-slate-50"
-                    }`
-                  }
-                >
-                  <Icon size={18} />
-                  {label}
-                </NavLink>
-              ))}
-
-            {isAuth ? (
-              <>
-                <Link
-                  to="/account"
-                  onClick={closeMenu}
-                  className="flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold text-slate-800 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-indigo-700">
-                    {accountInitial}
-                  </span>
-                  <span className="truncate">{user?.name || "My Account"}</span>
-                </Link>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    closeMenu();
-                    LogoutUser();
-                  }}
-                  className="rounded-xl px-4 py-3 text-left text-sm font-semibold text-slate-600 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                >
-                  Sign out
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  onClick={closeMenu}
-                  className="rounded-xl px-4 py-3 text-center text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
-                >
-                  Sign in
-                </Link>
-
-                <Link
-                  to="/register"
-                  onClick={closeMenu}
-                  className="flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100"
-                >
-                  Get started
-                  <ArrowUpRight size={16} />
-                </Link>
-              </>
+          <div className="mx-auto flex max-w-6xl flex-col gap-1 px-6 py-4">
+            {isAuth && (
+              <ul className="flex flex-col gap-1">
+                {NAVIGATION.map(({ label, to, icon: Icon }) => (
+                  <li key={to}>
+                    <NavLink
+                      to={to}
+                      onClick={closeMenu}
+                      className={mobileLinkClass}
+                    >
+                      <Icon size={18} aria-hidden="true" />
+                      {label}
+                    </NavLink>
+                  </li>
+                ))}
+              </ul>
             )}
+
+            <div
+              className={`flex flex-col gap-2 ${isAuth ? "mt-3 border-t border-slate-200 pt-4" : ""}`}
+            >
+              {isAuth ? (
+                <>
+                  <Link
+                    to="/account"
+                    onClick={closeMenu}
+                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-base font-semibold text-slate-900 hover:bg-slate-50 ${FOCUS_RING}`}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-800"
+                    >
+                      {accountInitial}
+                    </span>
+                    <span className="truncate">{user?.name || "Account"}</span>
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className={`rounded-lg px-3 py-3 text-left text-base font-semibold text-slate-700 hover:bg-slate-50 ${FOCUS_RING}`}
+                  >
+                    Log out
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={closeMenu}
+                    className={`rounded-lg border border-slate-300 px-4 py-3 text-center text-base font-semibold text-slate-800 hover:bg-slate-50 ${FOCUS_RING}`}
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    to="/register"
+                    onClick={closeMenu}
+                    className={`${PRIMARY_BUTTON} py-3 text-base`}
+                  >
+                    Sign up
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
         </div>
       )}

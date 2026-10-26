@@ -1,10 +1,37 @@
-import HomeHero from "../components/home/HomeHero";
+import { useAppData } from "../context/useAppData";
+import HeroSection from "../components/home/HeroSection";
+import ToolsSection from "../components/home/ToolsSection";
+import HowItWorksSection from "../components/home/HowItWorksSection";
+import FAQSection from "../components/home/FAQSection";
+import CTASection from "../components/home/CTASection";
+import FooterSection from "../components/home/FooterSection";
 
 const Home = () => {
+  const { isAuth } = useAppData();
+
+  const primaryTo = isAuth ? "/analyse" : "/register";
+  const primaryLabel = isAuth ? "Analyse a resume" : "Upload your resume";
+
   return (
-    <main>
-      <HomeHero />
-    </main>
+    <>
+      <main>
+        <HeroSection
+          primaryTo={primaryTo}
+          primaryLabel={primaryLabel}
+          isAuth={isAuth}
+        />
+
+        <ToolsSection />
+
+        <HowItWorksSection />
+
+        <FAQSection />
+
+        <CTASection primaryTo={primaryTo} primaryLabel={primaryLabel} />
+      </main>
+
+      <FooterSection />
+    </>
   );
 };
 
