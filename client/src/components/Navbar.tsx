@@ -48,7 +48,7 @@ const mobileLinkClass = ({ isActive }: { isActive: boolean }) =>
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const { isAuth, user, LogoutUser } = useAppData();
+  const { isAuth, user } = useAppData();
 
   const closeMenu = () => setIsMenuOpen(false);
 
@@ -63,11 +63,6 @@ const Navbar = () => {
 
   const accountInitial = user?.name?.trim().charAt(0).toUpperCase() || "U";
   const firstName = user?.name?.trim().split(/\s+/)[0] || "Account";
-
-  const handleLogout = () => {
-    closeMenu();
-    LogoutUser();
-  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/95 backdrop-blur">
@@ -110,34 +105,28 @@ const Navbar = () => {
         {/* Desktop account area */}
         <div className="hidden shrink-0 items-center gap-2 lg:flex">
           {isAuth ? (
-            <>
-              <Link
-                to="/account"
-                className={`flex max-w-44 items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-slate-100 ${FOCUS_RING}`}
+            <Link
+              to="/account"
+              aria-label={`Account: ${user?.name || "Account"}`}
+              className={`flex max-w-48 items-center gap-2 rounded-lg px-2 py-1.5 transition-colors hover:bg-slate-100 ${FOCUS_RING}`}
+            >
+              <span
+                aria-hidden="true"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-800"
               >
-                <span
-                  aria-hidden="true"
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-800"
-                >
-                  {accountInitial}
-                </span>
-                <span className="truncate text-sm font-semibold text-slate-800">
-                  {firstName}
-                </span>
-              </Link>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className={GHOST_BUTTON}
-              >
-                Log out
-              </button>
-            </>
+                {accountInitial}
+              </span>
+
+              <span className="max-w-32 truncate text-sm font-semibold text-slate-800">
+                {firstName}
+              </span>
+            </Link>
           ) : (
             <>
               <Link to="/login" className={GHOST_BUTTON}>
                 Log in
               </Link>
+
               <Link to="/register" className={PRIMARY_BUTTON}>
                 Sign up
               </Link>
@@ -189,40 +178,39 @@ const Navbar = () => {
             )}
 
             <div
-              className={`flex flex-col gap-2 ${isAuth ? "mt-3 border-t border-slate-200 pt-4" : ""}`}
+              className={`flex flex-col gap-2 ${
+                isAuth ? "mt-3 border-t border-slate-200 pt-4" : ""
+              }`}
             >
               {isAuth ? (
-                <>
-                  <Link
-                    to="/account"
-                    onClick={closeMenu}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2 text-base font-semibold text-slate-900 hover:bg-slate-50 ${FOCUS_RING}`}
+                <Link
+                  to="/account"
+                  onClick={closeMenu}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 text-base font-semibold text-slate-900 transition-colors hover:bg-slate-50 ${FOCUS_RING}`}
+                >
+                  <span
+                    aria-hidden="true"
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-800"
                   >
-                    <span
-                      aria-hidden="true"
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-100 text-sm font-bold text-blue-800"
-                    >
-                      {accountInitial}
-                    </span>
-                    <span className="truncate">{user?.name || "Account"}</span>
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={handleLogout}
-                    className={`rounded-lg px-3 py-3 text-left text-base font-semibold text-slate-700 hover:bg-slate-50 ${FOCUS_RING}`}
-                  >
-                    Log out
-                  </button>
-                </>
+                    {accountInitial}
+                  </span>
+
+                  <span className="truncate">{user?.name || "Account"}</span>
+
+                  <span className="ml-auto text-sm font-medium text-slate-500">
+                    Account
+                  </span>
+                </Link>
               ) : (
                 <>
                   <Link
                     to="/login"
                     onClick={closeMenu}
-                    className={`rounded-lg border border-slate-300 px-4 py-3 text-center text-base font-semibold text-slate-800 hover:bg-slate-50 ${FOCUS_RING}`}
+                    className={`rounded-lg border border-slate-300 px-4 py-3 text-center text-base font-semibold text-slate-800 transition-colors hover:bg-slate-50 ${FOCUS_RING}`}
                   >
                     Log in
                   </Link>
+
                   <Link
                     to="/register"
                     onClick={closeMenu}

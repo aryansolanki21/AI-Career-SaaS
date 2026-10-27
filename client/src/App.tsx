@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar";
 import Register from "./pages/Register";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
+import Account from "./pages/Account";
 
 const AppContent = () => {
   const { loading } = useAppData();
@@ -28,6 +29,7 @@ const AppContent = () => {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/account" element={<Account />} />
 
         <Route
           path="*"
