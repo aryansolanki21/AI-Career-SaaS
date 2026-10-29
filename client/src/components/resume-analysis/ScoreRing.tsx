@@ -1,20 +1,34 @@
+import { useEffect, useState } from "react";
+
 interface ScoreRingProps {
   score: number;
   size?: number;
 }
 
-const ScoreRing = ({ score, size = 160 }: ScoreRingProps) => {
-  const normalizedScore = Math.min(100, Math.max(0, score));
-  const radius = 42;
-  const circumference = 2 * Math.PI * radius;
-  const progress = (normalizedScore / 100) * circumference;
+const RADIUS = 42;
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
 
-  const scoreColor =
-    normalizedScore >= 80
-      ? "#34d399"
-      : normalizedScore >= 60
-        ? "#fbbf24"
-        : "#f87171";
+const getRingColor = (score: number): string => {
+  if (score >= 80) return "stroke-emerald-600";
+  if (score >= 60) return "stroke-amber-600";
+  return "stroke-red-600";
+};
+
+const ScoreRing = ({ score, size = 128 }: ScoreRingProps) => {
+  const safeScore = Number.isFinite(score) ? score : 0;
+  const normalizedScore = Math.round(Math.min(100, Math.max(0, safeScore)));
+
+  const [filled, setFilled] = useState(false);
+
+  // One-time fill when the report appears. Disabled for reduced-motion users via CSS.
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setFilled(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+
+  const offset = filled
+    ? CIRCUMFERENCE * (1 - normalizedScore / 100)
+    : CIRCUMFERENCE;
 
   return (
     <div
@@ -33,36 +47,29 @@ const ScoreRing = ({ score, size = 160 }: ScoreRingProps) => {
         <circle
           cx="50"
           cy="50"
-          r={radius}
+          r={RADIUS}
           fill="none"
-          stroke="currentColor"
-          strokeOpacity="0.1"
-          strokeWidth="7"
+          strokeWidth="8"
+          className="stroke-slate-200"
         />
-
         <circle
           cx="50"
           cy="50"
-          r={radius}
+          r={RADIUS}
           fill="none"
-          stroke={scoreColor}
-          strokeWidth="7"
+          strokeWidth="8"
           strokeLinecap="round"
-          strokeDasharray={`${progress} ${circumference}`}
-          className="transition-all duration-1000 ease-out"
+          strokeDasharray={CIRCUMFERENCE}
+          strokeDashoffset={offset}
+          className={`${getRingColor(normalizedScore)} transition-[stroke-dashoffset] duration-1000 ease-out motion-reduce:transition-none`}
         />
       </svg>
 
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-3xl font-bold text-slate-900">
+        <span className="text-3xl font-bold tabular-nums text-slate-950">
           {normalizedScore}
         </span>
-
-        <span className="mt-1 text-xs font-medium uppercase tracking-widest text-slate-500">
-          ATS Score
-        </span>
-
-        <span className="mt-1 text-xs text-slate-400">out of 100</span>
+        <span className="text-xs text-slate-500">out of 100</span>
       </div>
     </div>
   );

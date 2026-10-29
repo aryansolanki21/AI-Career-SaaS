@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import { FileText, Upload, X } from "lucide-react";
 
 interface ResumeUploadProps {
@@ -7,6 +7,21 @@ interface ResumeUploadProps {
 }
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
+
+const FOCUS_RING =
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-700";
+
+const PRIMARY_BUTTON = `inline-flex items-center justify-center rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-60 ${FOCUS_RING}`;
+
+const SECONDARY_BUTTON = `inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60 ${FOCUS_RING}`;
+
+const formatFileSize = (bytes: number): string => {
+  if (bytes < 1024 * 1024) {
+    return `${Math.max(1, Math.round(bytes / 1024))} KB`;
+  }
+
+  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+};
 
 const ResumeUpload = ({ onAnalyze, loading }: ResumeUploadProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -40,17 +55,18 @@ const ResumeUpload = ({ onAnalyze, loading }: ResumeUploadProps) => {
     return true;
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
 
     if (file) {
       validateFile(file);
     }
 
+    // Allows choosing the same file again after removing it.
     event.target.value = "";
   };
 
-  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
     event.preventDefault();
     setDragging(false);
 
@@ -79,7 +95,7 @@ const ResumeUpload = ({ onAnalyze, loading }: ResumeUploadProps) => {
   };
 
   return (
-    <section className="mx-auto w-full max-w-3xl">
+    <section className="w-full" aria-label="Upload your resume">
       <div
         onDragOver={(event) => {
           event.preventDefault();
@@ -90,10 +106,8 @@ const ResumeUpload = ({ onAnalyze, loading }: ResumeUploadProps) => {
         }}
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
-        className={`rounded-2xl border-2 border-dashed p-6 transition-colors sm:p-10 ${
-          dragging
-            ? "border-indigo-500 bg-indigo-50"
-            : "border-slate-300 bg-white"
+        className={`rounded-xl border-2 border-dashed p-8 transition-colors sm:p-12 ${
+          dragging ? "border-blue-700 bg-blue-50" : "border-slate-300 bg-white"
         }`}
       >
         <input
@@ -108,44 +122,35 @@ const ResumeUpload = ({ onAnalyze, loading }: ResumeUploadProps) => {
 
         {!selectedFile ? (
           <div className="flex flex-col items-center text-center">
-            <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600">
-              <Upload size={30} />
-            </div>
+            <Upload size={28} className="text-slate-500" aria-hidden="true" />
 
-            <h2 className="text-xl font-semibold text-slate-900">
-              Upload your resume
+            <h2 className="mt-4 text-lg font-semibold text-slate-950">
+              Drop your resume here
             </h2>
 
-            <p className="mt-2 max-w-md text-sm leading-6 text-slate-500">
-              Drag and drop your resume here, or select a PDF from your device
-              to receive your ATS compatibility report.
+            <p className="mt-1.5 max-w-md text-sm leading-6 text-slate-600">
+              or choose a PDF from your device. PDF only, up to 5 MB.
             </p>
 
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={loading}
-              className="mt-6 inline-flex items-center justify-center rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className={`${PRIMARY_BUTTON} mt-6`}
             >
               Choose PDF
             </button>
-
-            <p className="mt-4 text-xs text-slate-400">
-              PDF only · Maximum file size: 5 MB
-            </p>
           </div>
         ) : (
           <div className="flex flex-col items-center text-center">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
-              <FileText size={28} />
-            </div>
+            <FileText size={28} className="text-slate-500" aria-hidden="true" />
 
-            <h2 className="mt-4 max-w-full break-all text-base font-semibold text-slate-900">
+            <h2 className="mt-4 max-w-full break-all text-base font-semibold text-slate-950">
               {selectedFile.name}
             </h2>
 
-            <p className="mt-2 text-sm text-slate-500">
-              {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+            <p className="mt-1 text-sm text-slate-500">
+              {formatFileSize(selectedFile.size)}
             </p>
 
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
@@ -153,18 +158,18 @@ const ResumeUpload = ({ onAnalyze, loading }: ResumeUploadProps) => {
                 type="button"
                 onClick={handleAnalyze}
                 disabled={loading}
-                className="rounded-xl bg-indigo-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className={PRIMARY_BUTTON}
               >
-                Analyze Resume
+                {loading ? "Analysing..." : "Analyse resume"}
               </button>
 
               <button
                 type="button"
                 onClick={removeFile}
                 disabled={loading}
-                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 px-5 py-3 text-sm font-medium text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                className={SECONDARY_BUTTON}
               >
-                <X size={16} />
+                <X size={16} aria-hidden="true" />
                 Remove
               </button>
             </div>
@@ -175,7 +180,7 @@ const ResumeUpload = ({ onAnalyze, loading }: ResumeUploadProps) => {
       {error && (
         <p
           role="alert"
-          className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600"
+          className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
         >
           {error}
         </p>

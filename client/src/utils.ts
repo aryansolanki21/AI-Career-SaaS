@@ -7,8 +7,7 @@ import {
   MessageSquare,
   ScanText,
 } from "lucide-react";
-import type { Analysis, InterviewData, ResumeData } from "./types";
-import jsPDF from "jspdf";
+import type { InterviewData, ResumeData } from "./types";
 
 export const plans = [
   {
@@ -158,7 +157,7 @@ export async function downloadInterview(data: InterviewData) {
     }
   };
 
-  doc.setFontSize(18).setFont("helvetica", "bold").setTextColor(99, 102, 241);
+  doc.setFontSize(18).setFont("helvetica", "bold").setTextColor(29, 78, 216);
   doc.text("Interview Questions", ml, y);
   y += 7;
   doc
@@ -176,7 +175,7 @@ export async function downloadInterview(data: InterviewData) {
 
   data.questions.forEach((q, i) => {
     checkPage();
-    doc.setFontSize(9).setFont("helvetica", "bold").setTextColor(99, 102, 241);
+    doc.setFontSize(9).setFont("helvetica", "bold").setTextColor(29, 78, 216);
     doc.text(`Q${i + 1}  [${q.category}]`, ml, y);
     y += 5;
 
@@ -203,8 +202,11 @@ export async function downloadInterview(data: InterviewData) {
   doc.save(`${data.role.replace(/\s+/g, "_")}_${data.round}_interview.pdf`);
 }
 
-export function generateResumePDF(r: ResumeData) {
+export const generateResumePDF = async (r: ResumeData) => {
+  const { default: jsPDF } = await import("jspdf");
+
   const doc = new jsPDF({ unit: "mm", format: "a4" });
+
   const W = 210,
     ml = 15,
     mr = 15,
@@ -212,7 +214,7 @@ export function generateResumePDF(r: ResumeData) {
   let y = 18;
 
   const heading = (text: string) => {
-    doc.setFontSize(7).setFont("helvetica", "bold").setTextColor(99, 102, 241);
+    doc.setFontSize(7).setFont("helvetica", "bold").setTextColor(29, 78, 216);
     doc.text(text.toUpperCase(), ml, y);
     doc
       .setDrawColor(229, 231, 235)
@@ -347,7 +349,7 @@ export function generateResumePDF(r: ResumeData) {
         doc
           .setFontSize(8)
           .setFont("helvetica", "normal")
-          .setTextColor(99, 102, 241);
+          .setTextColor(29, 78, 216);
         doc.text(`  ${p.link}`, ml + doc.getTextWidth(p.name), y);
       }
       y += 5;
@@ -363,7 +365,7 @@ export function generateResumePDF(r: ResumeData) {
   }
 
   doc.save(`${r.name.replace(/\s+/g, "_")}_Resume.pdf`);
-}
+};
 
 export const scoreColor = (s: number) =>
   s >= 80 ? "text-emerald-400" : s >= 60 ? "text-amber-400" : "text-red-400";
@@ -385,98 +387,4 @@ export const prioColor = {
 };
 export const prioEmoji = { high: "🔴", medium: "🟡", low: "🟢" };
 
-export function downloadReport(result: Analysis) {
-  const html = `<!DOCTYPE html>
-<html><head><meta charset="utf-8"/><title>Resume Analysis Report</title>
-<style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'Segoe UI',sans-serif;background:#f8fafc;color:#1e293b;padding:40px}
-  .header{background:linear-gradient(135deg,#6366f1,#34d399);border-radius:16px;padding:32px;color:white;margin-bottom:24px;display:flex;align-items:center;gap:24px}
-  .circle{width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
-  .circle-num{font-size:32px;font-weight:900}
-  .circle-lbl{font-size:11px;opacity:.7;text-transform:uppercase;letter-spacing:1px}
-  .title{font-size:20px;font-weight:800;margin-bottom:8px}
-  .summary{font-size:14px;opacity:.9;line-height:1.6}
-  .card{background:white;border-radius:12px;padding:24px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
-  .label{font-size:11px;text-transform:uppercase;letter-spacing:1.5px;color:#94a3b8;margin-bottom:16px;font-weight:600}
-  .bar-row{margin-bottom:14px}
-  .bar-hd{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
-  .bar-track{height:6px;background:#e2e8f0;border-radius:99px;overflow:hidden}
-  .bar-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,#6366f1,#34d399)}
-  .bar-fb{font-size:12px;color:#64748b;margin-top:4px}
-  .strength{display:flex;gap:8px;font-size:13px;color:#334155;margin-bottom:8px}
-  .sug{border-radius:10px;padding:14px;margin-bottom:10px;border:1px solid}
-  .sug.high{background:#fff5f5;border-color:#fecaca}
-  .sug.medium{background:#fffbeb;border-color:#fde68a}
-  .sug.low{background:#f0fdf4;border-color:#bbf7d0}
-  .sug-hd{display:flex;justify-content:space-between;margin-bottom:6px}
-  .sug-cat{font-weight:600;font-size:13px}
-  .sug-prio{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px}
-  .sug-issue{font-size:12px;color:#64748b;margin-bottom:6px}
-  .sug-rec{font-size:12px;color:#334155}
-  .footer{text-align:center;font-size:11px;color:#94a3b8;margin-top:24px}
-</style></head><body>
-
-<div class="header">
-  <div class="circle">
-    <span class="circle-num">${result.atsScore}</span>
-    <span class="circle-lbl">ATS</span>
-  </div>
-  <div>
-    <div class="title">Resume Analysis Report</div>
-    <div class="summary">${result.summary}</div>
-  </div>
-</div>
-
-<div class="card">
-  <div class="label">Score Breakdown</div>
-  ${Object.entries(result.scoreBreakdown)
-    .map(
-      ([key, val]) => `
-    <div class="bar-row">
-      <div class="bar-hd"><span style="text-transform:capitalize">${key}</span><strong>${val.score}/100</strong></div>
-      <div class="bar-track"><div class="bar-fill" style="width:${val.score}%"></div></div>
-      <div class="bar-fb">${val.feedback}</div>
-    </div>`,
-    )
-    .join("")}
-</div>
-
-<div class="card">
-  <div class="label">Strengths</div>
-  ${result.strengths
-    .map((s) => `<div class="strength"><span>✓</span>${s}</div>`)
-    .join("")}
-</div>
-
-<div class="card">
-  <div class="label">Suggestions</div>
-  ${result.suggestions
-    .map(
-      (s) => `
-    <div class="sug ${s.priority}">
-      <div class="sug-hd">
-        <span class="sug-cat">${s.category}</span>
-        <span class="sug-prio">${prioEmoji[s.priority]} ${s.priority}</span>
-      </div>
-      <div class="sug-issue">${s.issue}</div>
-      <div class="sug-rec">→ ${s.recommendation}</div>
-    </div>`,
-    )
-    .join("")}
-</div>
-
-<div class="footer">Generated by CareerAI · ${new Date().toLocaleDateString(
-    "en-IN",
-    { day: "numeric", month: "long", year: "numeric" },
-  )}</div>
-</body></html>`;
-
-  const blob = new Blob([html], { type: "text/html" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = "resume-analysis.html";
-  a.click();
-  URL.revokeObjectURL(url);
-}
+export { downloadReport } from "./downloadReport";

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
-import { AlertCircle, LoaderCircle, Sparkles } from "lucide-react";
+import { AlertCircle, LoaderCircle } from "lucide-react";
 import toast from "react-hot-toast";
 
 import ResumeUpload from "../components/resume-analysis/ResumeUpload";
@@ -20,7 +20,7 @@ const Analyse = () => {
 
   const handleAnalyze = async (file: File) => {
     if (!isAuth) {
-      toast.error("Please log in to analyze your resume.");
+      toast.error("Please log in to analyse your resume.");
       return;
     }
 
@@ -55,9 +55,9 @@ const Analyse = () => {
       }
 
       setAnalysis(result);
-      toast.success("Resume analyzed successfully.");
+      toast.success("Resume analysed.");
     } catch (err: unknown) {
-      let message = "Unable to analyze your resume. Please try again.";
+      let message = "Unable to analyse your resume. Please try again.";
 
       if (axios.isAxiosError(err)) {
         message =
@@ -69,8 +69,8 @@ const Analyse = () => {
         message = err.message;
       }
 
+      // Shown inline below. No second toast, so the same message isn't repeated.
       setError(message);
-      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -82,24 +82,16 @@ const Analyse = () => {
   };
 
   return (
-    <main className="min-h-[calc(100vh-64px)] bg-slate-50 px-4 py-10 sm:px-6 sm:py-14">
-      <div className="mx-auto max-w-6xl">
-        <header className="mx-auto mb-10 max-w-3xl text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-700">
-            <Sparkles size={24} aria-hidden="true" />
-          </div>
-
-          <p className="mt-5 text-sm font-semibold uppercase tracking-widest text-indigo-600">
-            AI-powered resume review
-          </p>
-
-          <h1 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
-            Resume Analyzer
+    <main className="px-4 py-10 sm:px-6 sm:py-14">
+      <div className="mx-auto max-w-4xl">
+        <header className="mb-8 max-w-2xl">
+          <h1 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
+            Resume analysis
           </h1>
 
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-7 text-slate-600 sm:text-base">
-            Discover your resume's ATS compatibility, identify its strengths,
-            and get actionable recommendations to improve it.
+          <p className="mt-3 text-base leading-relaxed text-slate-600">
+            Upload your resume as a PDF. You get an ATS score, what is already
+            working, and the fixes that matter most.
           </p>
         </header>
 
@@ -109,31 +101,32 @@ const Analyse = () => {
 
         {loading && (
           <div
-            className="mx-auto mt-8 flex max-w-md flex-col items-center rounded-2xl border border-indigo-100 bg-white p-8 text-center shadow-sm"
             role="status"
             aria-live="polite"
+            className="mt-6 flex items-start gap-3 rounded-xl border border-slate-200 bg-white p-5"
           >
             <LoaderCircle
-              size={36}
-              className="animate-spin text-indigo-600"
+              size={22}
+              className="mt-0.5 shrink-0 animate-spin text-blue-700"
               aria-hidden="true"
             />
 
-            <h2 className="mt-4 text-lg font-semibold text-slate-900">
-              Analyzing your resume
-            </h2>
-
-            <p className="mt-2 text-sm leading-6 text-slate-500">
-              Our AI is reviewing your resume's formatting, keywords, structure,
-              and readability. This may take a moment.
-            </p>
+            <div>
+              <p className="font-semibold text-slate-950">
+                Analysing your resume
+              </p>
+              <p className="mt-1 text-sm leading-6 text-slate-600">
+                Checking formatting, keywords, structure and readability. This
+                can take a little while.
+              </p>
+            </div>
           </div>
         )}
 
         {error && !loading && (
           <div
             role="alert"
-            className="mx-auto mt-6 flex max-w-3xl items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+            className="mt-6 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
           >
             <AlertCircle
               size={20}
@@ -150,23 +143,6 @@ const Analyse = () => {
 
         {analysis && (
           <AnalysisResults analysis={analysis} onReset={handleReset} />
-        )}
-
-        {!analysis && !loading && !error && (
-          <div className="mx-auto mt-8 flex flex-wrap justify-center gap-3">
-            {[
-              "ATS compatibility score",
-              "Resume strengths",
-              "Actionable suggestions",
-            ].map((feature) => (
-              <span
-                key={feature}
-                className="rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-medium text-slate-600"
-              >
-                {feature}
-              </span>
-            ))}
-          </div>
         )}
       </div>
     </main>
