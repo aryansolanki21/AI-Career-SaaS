@@ -12,7 +12,7 @@ const MAX_BASE64_LENGTH = Math.ceil(MAX_PDF_SIZE / 3) * 4 + 4;
 const MAX_JOB_DESCRIPTION_LENGTH = 8000;
 const GEMINI_MODEL = (process.env.GEMINI_MODEL || "gemini-3.8-flash").trim();
 
-/* The overall score is calculated here so it always agrees with the breakdown. */
+//  The overall score is calculated here so it always agrees with the breakdown.
 const SCORE_WEIGHTS = {
   formatting: 0.3,
   keywords: 0.3,
@@ -48,8 +48,7 @@ interface ResumeAnalysis extends ModelAnalysis {
   atsScore: number;
 }
 
-/* ---------- Gemini structured output ---------- */
-
+//  ---------- Gemini structured output ----------
 const scoreCategorySchema: Schema = {
   type: Type.OBJECT,
   properties: {
@@ -101,8 +100,7 @@ const getGeminiClient = (): GoogleGenAI => {
   return new GoogleGenAI({ apiKey });
 };
 
-/* ---------- Validation and normalisation ---------- */
-
+//  ---------- Validation and normalisation ----------
 const isScore = (value: unknown): value is number =>
   typeof value === "number" &&
   Number.isFinite(value) &&
@@ -190,8 +188,7 @@ const buildAnalysis = (model: ModelAnalysis): ResumeAnalysis => {
   };
 };
 
-/* ---------- Controller ---------- */
-
+// ---------- Main Controller Function ----------
 export const analyseResume = async (
   req: Request,
   res: Response,
