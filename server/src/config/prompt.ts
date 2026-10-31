@@ -110,16 +110,16 @@ export const JOB_MATCHER_SYSTEM_PROMPT = `
       }
     ],
     "experienceAssessment": {
-      "status": "matched",
-      "jobExpectation": "Experience requirement stated in the job description",
-      "resumeEvidence": "Relevant evidence from the resume",
-      "explanation": "Comparison of the requirement and available evidence"
+      "status": "not_specified",
+      "jobExpectation": "",
+      "resumeEvidence": "",
+      "explanation": "The job description does not specify an experience requirement."
     },
     "educationAssessment": {
-      "status": "matched",
-      "jobExpectation": "Education requirement stated in the job description",
-      "resumeEvidence": "Relevant evidence from the resume",
-      "explanation": "Comparison of the requirement and available evidence"
+      "status": "not_specified",
+      "jobExpectation": "",
+      "resumeEvidence": "",
+      "explanation": "The job description does not specify an experience requirement."
     },
     "strengths": [
       {
@@ -140,7 +140,10 @@ export const JOB_MATCHER_SYSTEM_PROMPT = `
 
   STRICT VALIDATION RULES
   - requirements must contain distinct, job-specific requirements, not duplicates.
-  - Include up to 20 of the most meaningful requirements.
+  - Extract approximately 8 to 15 distinct, meaningful requirements.
+  - Combine closely related requirements where appropriate.
+  - Prioritize requirements that materially affect suitability for the role.
+  - Never create separate requirements merely to inflate the requirement count.
   - Use only the allowed status values: matched, partial, missing.
   - Use only the allowed importance values: essential, preferred.
   - Use only the allowed priorities: high, medium, low.

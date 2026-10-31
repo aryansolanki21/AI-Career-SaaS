@@ -1,6 +1,6 @@
 import multer from "multer";
-
-const MAX_PDF_SIZE = 5 * 1024 * 1024;
+import { MAX_PDF_SIZE } from "../config/limits.js";
+import { HttpError } from "../utils/http-error.js";
 
 const uploadResume = multer({
   storage: multer.memoryStorage(),
@@ -10,7 +10,7 @@ const uploadResume = multer({
   },
   fileFilter: (_req, file, callback) => {
     if (file.mimetype !== "application/pdf") {
-      callback(new Error("Please upload a PDF file."));
+      callback(new HttpError("Please upload a PDF file.", 400));
       return;
     }
 

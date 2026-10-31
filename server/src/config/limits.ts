@@ -1,0 +1,3 @@
+export const MAX_PDF_SIZE = 5 * 1024 * 1024;
+export const MIN_JOB_DESCRIPTION_LENGTH = 50;
+export const MAX_JOB_DESCRIPTION_LENGTH = 8000;
