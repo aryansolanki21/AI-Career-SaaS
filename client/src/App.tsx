@@ -6,17 +6,17 @@ import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Account from "./pages/Account";
 import Analyse from "./pages/Analyse";
+import JobMatcher from "./pages/JobMatcher";
 
 const AppContent = () => {
   const { loading } = useAppData();
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#080b14] text-white">
+      <main className="flex min-h-screen items-center justify-center bg-slate-50 text-slate-900">
         <div className="flex flex-col items-center gap-4">
-          <div className="h-10 w-10 animate-pulse rounded-xl bg-linear-to-br from-indigo-500 to-emerald-400" />
-
-          <p className="text-sm tracking-widest text-white/50">LOADING...</p>
+          <div className="h-10 w-10 animate-pulse rounded-xl bg-blue-600" />
+          <p className="text-sm tracking-widest text-slate-500">LOADING...</p>
         </div>
       </main>
     );
@@ -32,6 +32,7 @@ const AppContent = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/account" element={<Account />} />
         <Route path="/analyse" element={<Analyse />} />
+        <Route path="/jobmatcher" element={<JobMatcher />} />
 
         <Route
           path="*"
