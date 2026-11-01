@@ -22,35 +22,36 @@ const TOOLS: Tool[] = [
     to: "/analyse",
     icon: FileSearch,
     summary:
-      "Scores your resume against a job description and points to the lines to fix.",
+      "Analyzes your resume and identifies areas to improve its ATS compatibility.",
     input: "Resume + job description",
-    output: "ATS score, keyword gaps, line-level fixes",
+    output: "ATS score, keyword gaps and improvement suggestions",
   },
   {
     name: "Job matching",
     to: "/jobmatcher",
     icon: BriefcaseBusiness,
-    summary: "Ranks roles by how well your skills and experience fit them.",
-    input: "Your resume",
-    output: "Roles ranked by match, with the skills you lack",
+    summary:
+      "Compares your resume against a job description to identify matching skills and missing requirements.",
+    input: "Resume + job description",
+    output: "Match score, requirement analysis and skill gaps",
   },
   {
     name: "Resume builder",
     to: "/resumebuilder",
     icon: FileText,
     summary:
-      "Builds a clean, single-column resume that applicant tracking systems can read.",
-    input: "Your details or an existing resume",
-    output: "A PDF you can send",
+      "Builds a professional, ATS-friendly resume with a clean and readable layout.",
+    input: "Your personal, educational and professional details",
+    output: "A downloadable resume PDF",
   },
   {
     name: "Interview prep",
     to: "/interviewprep",
     icon: MessageSquareText,
     summary:
-      "Generates questions from the role you applied for and reviews your answers.",
-    input: "Job description + your answers",
-    output: "Likely questions and feedback on each answer",
+      "Generates job-specific technical or HR interview questions with helpful hints.",
+    input: "Job role + job description",
+    output: "20–40 interview questions with hints and PDF download",
   },
 ];
 
@@ -63,12 +64,12 @@ const ToolsSection = () => {
       <div className="mx-auto max-w-6xl px-6 py-14 lg:py-16">
         <div className="max-w-2xl">
           <h2 className="text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">
-            Four tools, built around one resume
+            Four tools, built around your career
           </h2>
 
           <p className="mt-3 text-lg leading-relaxed text-slate-600">
-            Each tool takes something you already have and gives back something
-            you can use that day.
+            From improving your resume to preparing for interviews, get the
+            tools you need throughout your job search.
           </p>
         </div>
 
@@ -100,13 +101,11 @@ const ToolsSection = () => {
                 <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm md:col-span-2 md:grid-cols-[1fr_1.2fr]">
                   <div className="contents md:block">
                     <dt className="font-medium text-slate-500">You give</dt>
-
                     <dd className="text-slate-800">{input}</dd>
                   </div>
 
                   <div className="contents md:block">
                     <dt className="font-medium text-slate-500">You get</dt>
-
                     <dd className="text-slate-800">{output}</dd>
                   </div>
                 </dl>

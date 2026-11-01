@@ -127,6 +127,7 @@ export const features = [
 export function toBase64(file: File): Promise<string> {
   return new Promise((res, rej) => {
     const r = new FileReader();
+
     r.onload = () => res(r.result as string);
     r.onerror = rej;
     r.readAsDataURL(file);
@@ -135,6 +136,7 @@ export function toBase64(file: File): Promise<string> {
 
 export const matchColor = (s: number) =>
   s >= 80 ? "text-emerald-400" : s >= 60 ? "text-amber-400" : "text-red-400";
+
 export const matchBg = (s: number) =>
   s >= 80
     ? "bg-emerald-500/10 border-emerald-500/25"
@@ -145,6 +147,7 @@ export const matchBg = (s: number) =>
 /* ── Download as PDF using jsPDF ── */
 export async function downloadInterview(data: InterviewData) {
   const { default: jsPDF } = await import("jspdf");
+
   const doc = new jsPDF({ unit: "mm", format: "a4" });
   const ml = 15,
     tw = 180;
@@ -160,10 +163,12 @@ export async function downloadInterview(data: InterviewData) {
   doc.setFontSize(18).setFont("helvetica", "bold").setTextColor(29, 78, 216);
   doc.text("Interview Questions", ml, y);
   y += 7;
+
   doc
     .setFontSize(10)
     .setFont("helvetica", "normal")
     .setTextColor(100, 100, 100);
+
   doc.text(
     `Role: ${data.role}  ·  Round: ${
       data.round === "hr" ? "HR Round" : "Technical Round"
@@ -175,6 +180,7 @@ export async function downloadInterview(data: InterviewData) {
 
   data.questions.forEach((q, i) => {
     checkPage();
+
     doc.setFontSize(9).setFont("helvetica", "bold").setTextColor(29, 78, 216);
     doc.text(`Q${i + 1}  [${q.category}]`, ml, y);
     y += 5;
@@ -188,8 +194,10 @@ export async function downloadInterview(data: InterviewData) {
       .setFontSize(8.5)
       .setFont("helvetica", "italic")
       .setTextColor(120, 120, 120);
+
     const hLines = doc.splitTextToSize(`Hint: ${q.hint}`, tw);
     doc.text(hLines, ml, y);
+    
     y += hLines.length * 4.5 + 2;
 
     doc
@@ -222,6 +230,7 @@ export const generateResumePDF = async (r: ResumeData) => {
       .line(ml, y + 1, ml + tw, y + 1);
     y += 6;
   };
+
   const addText = (
     text: string,
     size: number,
@@ -234,13 +243,16 @@ export const generateResumePDF = async (r: ResumeData) => {
       .setFontSize(size)
       .setFont("helvetica", style)
       .setTextColor(...color);
+
     const lines = doc.splitTextToSize(text, maxWidth ?? tw - indent);
     doc.text(lines, ml + indent, y);
     y += lines.length * (size * 0.45) + 1;
   };
+
   const gap = (n = 3) => {
     y += n;
   };
+
   const checkPage = (needed = 12) => {
     if (y + needed > 280) {
       doc.addPage();
@@ -269,14 +281,17 @@ export const generateResumePDF = async (r: ResumeData) => {
   // ── Experience ──
   if (r.experience?.length) {
     heading("Experience");
+
     r.experience.forEach((e) => {
       checkPage(14);
+
       doc.setFontSize(10).setFont("helvetica", "bold").setTextColor(26, 26, 26);
       doc.text(
         `${e.title}  ·  ${e.company}${e.location ? `, ${e.location}` : ""}`,
         ml,
         y,
       );
+
       doc
         .setFontSize(8)
         .setFont("helvetica", "normal")
@@ -284,6 +299,7 @@ export const generateResumePDF = async (r: ResumeData) => {
       const dateText = `${e.startDate} – ${e.endDate}`;
       doc.text(dateText, W - mr - doc.getTextWidth(dateText), y);
       y += 5;
+
       e.bullets.filter(Boolean).forEach((b) => {
         checkPage(6);
         addText(`• ${b}`, 8.5, "normal", [55, 65, 81], 3, tw - 3);
@@ -295,6 +311,7 @@ export const generateResumePDF = async (r: ResumeData) => {
   // ── Education ──
   if (r.education?.length) {
     heading("Education");
+
     r.education.forEach((e) => {
       checkPage(10);
       doc.setFontSize(10).setFont("helvetica", "bold").setTextColor(26, 26, 26);
@@ -303,6 +320,7 @@ export const generateResumePDF = async (r: ResumeData) => {
         ml,
         y,
       );
+
       const yr = `${e.year}${e.gpa ? `  ·  GPA ${e.gpa}` : ""}`;
       doc
         .setFontSize(8)
@@ -317,20 +335,26 @@ export const generateResumePDF = async (r: ResumeData) => {
   // ── Skills ──
   if (r.skills?.technical?.length || r.skills?.soft?.length) {
     heading("Skills");
+
     if (r.skills.technical?.length) {
       doc.setFontSize(9).setFont("helvetica", "bold").setTextColor(55, 65, 81);
       doc.text("Technical: ", ml, y);
+
       const lw = doc.getTextWidth("Technical: ");
       doc.setFont("helvetica", "normal");
+
       const lines = doc.splitTextToSize(r.skills.technical.join(", "), tw - lw);
       doc.text(lines, ml + lw, y);
       y += lines.length * 4 + 2;
     }
+
     if (r.skills.soft?.length) {
       doc.setFontSize(9).setFont("helvetica", "bold").setTextColor(55, 65, 81);
       doc.text("Soft: ", ml, y);
+
       const lw = doc.getTextWidth("Soft: ");
       doc.setFont("helvetica", "normal");
+
       const lines = doc.splitTextToSize(r.skills.soft.join(", "), tw - lw);
       doc.text(lines, ml + lw, y);
       y += lines.length * 4 + 2;
@@ -369,22 +393,26 @@ export const generateResumePDF = async (r: ResumeData) => {
 
 export const scoreColor = (s: number) =>
   s >= 80 ? "text-emerald-400" : s >= 60 ? "text-amber-400" : "text-red-400";
+
 export const scoreBar = (s: number) =>
   s >= 80
     ? "from-emerald-500 to-teal-400"
     : s >= 60
       ? "from-amber-500 to-orange-400"
       : "from-red-500 to-rose-400";
+
 export const prioBg = {
   high: "bg-red-500/10 border-red-500/20",
   medium: "bg-amber-500/10 border-amber-500/20",
   low: "bg-emerald-500/10 border-emerald-500/20",
 };
+
 export const prioColor = {
   high: "text-red-400",
   medium: "text-amber-400",
   low: "text-emerald-400",
 };
+
 export const prioEmoji = { high: "🔴", medium: "🟡", low: "🟢" };
 
 export { downloadReport } from "./downloadReport";

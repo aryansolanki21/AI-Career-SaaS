@@ -21,7 +21,7 @@ const NAVIGATION: NavItem[] = [
   { label: "Resume Analysis", to: "/analyse", icon: FileSearch },
   { label: "Job Matching", to: "/jobmatcher", icon: BriefcaseBusiness },
   { label: "Resume Builder", to: "/resumebuilder", icon: FileText },
-  { label: "Interview Prep", to: "/interviewprep", icon: MessageSquareText },
+  { label: "Interview Prep", to: "/interview-prep", icon: MessageSquareText },
 ];
 
 /* Shared class strings keep styling consistent and easy to change in one place. */
