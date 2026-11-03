@@ -7,6 +7,7 @@ import authRoutes from "./routes/auth.routes.js";
 import resumeAnalysisRoutes from "./routes/resumeAnalysis.routes.js";
 import jobMatcherRoutes from "./routes/jobMatcher.routes.js";
 import interviewPrepRoutes from "./routes/interviewPrep.routes.js";
+import resumeBuilderRoutes from "./routes/resumeBuilder.routes.js";
 
 const app = express();
 const PORT = Number(process.env.PORT ?? 5000);
@@ -28,6 +29,7 @@ app.use("/api/user", authRoutes);
 app.use("/api/ai", resumeAnalysisRoutes);
 app.use("/api/ai", jobMatcherRoutes);
 app.use("/api/ai", interviewPrepRoutes);
+app.use("/api/ai", resumeBuilderRoutes);
 
 app.use((_req, res) => {
   res.status(404).json({ message: "Route not found." });
