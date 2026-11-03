@@ -20,7 +20,7 @@ interface NavItem {
 const NAVIGATION: NavItem[] = [
   { label: "Resume Analysis", to: "/analyse", icon: FileSearch },
   { label: "Job Matching", to: "/jobmatcher", icon: BriefcaseBusiness },
-  { label: "Resume Builder", to: "/resumebuilder", icon: FileText },
+  { label: "Resume Builder", to: "/resume-builder", icon: FileText },
   { label: "Interview Prep", to: "/interview-prep", icon: MessageSquareText },
 ];
 

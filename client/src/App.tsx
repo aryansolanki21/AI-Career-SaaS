@@ -8,6 +8,7 @@ import Account from "./pages/Account";
 import Analyse from "./pages/Analyse";
 import JobMatcher from "./pages/JobMatcher";
 import InterviewPrep from "./pages/InterviewPrep";
+import ResumeBuilder from "./pages/ResumeBuilder";
 
 const AppContent = () => {
   const { loading } = useAppData();
@@ -35,6 +36,7 @@ const AppContent = () => {
         <Route path="/analyse" element={<Analyse />} />
         <Route path="/jobmatcher" element={<JobMatcher />} />
         <Route path="/interview-prep" element={<InterviewPrep />} />
+        <Route path="/resume-builder" element={<ResumeBuilder />} />
 
         <Route
           path="*"
