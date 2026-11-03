@@ -10,9 +10,9 @@ export const generateInterviewPrep = async (
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
-  const { user } = req as AuthenticatedRequest;
-
   try {
+    const { user } = req as AuthenticatedRequest;
+
     if (!user) {
       throw new HttpError("Authentication required.", 401);
     }

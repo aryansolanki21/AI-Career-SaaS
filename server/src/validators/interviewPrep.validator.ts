@@ -45,6 +45,7 @@ export function validateInterviewPrepRequest(
 
   if (
     typeof questionCount !== "number" ||
+    !Number.isInteger(questionCount) ||
     !QUESTION_COUNTS.includes(questionCount as QuestionCount)
   ) {
     throw new HttpError("Question count must be 20, 30, or 40.", 400);

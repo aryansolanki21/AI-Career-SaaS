@@ -14,7 +14,7 @@ const RULE: Rgb = [226, 232, 240];
 
 const MARGIN = 18;
 // Space kept free so a question title never sits alone at the bottom of a page.
-const MIN_QUESTION_HEIGHT = 26;
+const MIN_QUESTION_HEIGHT = 45;
 
 const INTERVIEW_LABEL: Record<InterviewType, string> = {
   technical: "Technical",

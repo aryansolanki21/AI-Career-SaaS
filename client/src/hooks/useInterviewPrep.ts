@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type {
   InterviewPrepRequest,
   InterviewPrepResponse,
@@ -15,18 +15,31 @@ export const useInterviewPrep = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const controllerRef = useRef<AbortController | null>(null);
+  const requestIdRef = useRef(0);
+
   const generateQuestions = useCallback(
     async (input: InterviewPrepRequest): Promise<void> => {
+      const requestId = ++requestIdRef.current;
+
+      controllerRef.current?.abort();
+      controllerRef.current = null;
+
+      setResult(null);
+      setError("");
+
       const token = localStorage.getItem("token");
 
       if (!token) {
+        setLoading(false);
         setError("Please log in to generate interview questions.");
         return;
       }
 
+      const controller = new AbortController();
+      controllerRef.current = controller;
+
       setLoading(true);
-      setError("");
-      setResult(null);
 
       try {
         const { data } = await axios.post<InterviewPrepResponse>(
@@ -35,11 +48,18 @@ export const useInterviewPrep = () => {
           {
             headers: { Authorization: `Bearer ${token}` },
             timeout: REQUEST_TIMEOUT_MS,
+            signal: controller.signal,
           },
         );
 
-        setResult(data.result);
+        if (requestId === requestIdRef.current) {
+          setResult(data.result);
+        }
       } catch (err: unknown) {
+        if (requestId !== requestIdRef.current || axios.isCancel(err)) {
+          return;
+        }
+
         setError(
           getApiErrorMessage(
             err,
@@ -47,16 +67,37 @@ export const useInterviewPrep = () => {
           ),
         );
       } finally {
-        setLoading(false);
+        if (requestId === requestIdRef.current) {
+          setLoading(false);
+          controllerRef.current = null;
+        }
       }
     },
     [],
   );
 
   const reset = useCallback(() => {
+    requestIdRef.current++;
+    controllerRef.current?.abort();
+    controllerRef.current = null;
+
     setResult(null);
     setError("");
+    setLoading(false);
   }, []);
 
-  return { result, loading, error, generateQuestions, reset };
+  useEffect(() => {
+    return () => {
+      requestIdRef.current++;
+      controllerRef.current?.abort();
+    };
+  }, []);
+
+  return {
+    result,
+    loading,
+    error,
+    generateQuestions,
+    reset,
+  };
 };

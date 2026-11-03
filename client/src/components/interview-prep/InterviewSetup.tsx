@@ -31,18 +31,27 @@ const InterviewSetup = ({ loading, error, onSubmit }: InterviewSetupProps) => {
     QUESTION_COUNTS[0],
   );
   const [validationError, setValidationError] = useState("");
-
+  
   // Local validation messages take priority over errors from the server.
   const message = validationError || error;
 
   const handleSubmit: SubmitEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
 
+    if (loading) return;
+
     const role = jobRole.trim();
     const description = jobDescription.trim();
 
     if (!role) {
       setValidationError("Enter the job role you are preparing for.");
+      return;
+    }
+
+    if (role.length > MAX_JOB_ROLE_LENGTH) {
+      setValidationError(
+        `Job role cannot exceed ${MAX_JOB_ROLE_LENGTH} characters.`,
+      );
       return;
     }
 
@@ -53,7 +62,15 @@ const InterviewSetup = ({ loading, error, onSubmit }: InterviewSetupProps) => {
       return;
     }
 
+    if (description.length > MAX_JOB_DESCRIPTION_LENGTH) {
+      setValidationError(
+        `Job description cannot exceed ${MAX_JOB_DESCRIPTION_LENGTH} characters.`,
+      );
+      return;
+    }
+
     setValidationError("");
+
     onSubmit({
       jobRole: role,
       jobDescription: description,
@@ -75,6 +92,7 @@ const InterviewSetup = ({ loading, error, onSubmit }: InterviewSetupProps) => {
         >
           Job role
         </label>
+
         <input
           id="job-role"
           type="text"
@@ -86,6 +104,12 @@ const InterviewSetup = ({ loading, error, onSubmit }: InterviewSetupProps) => {
           placeholder="e.g. Associate Frontend Developer"
           maxLength={MAX_JOB_ROLE_LENGTH}
           disabled={loading}
+          aria-invalid={Boolean(validationError && !jobRole.trim())}
+          aria-describedby={
+            validationError && !jobRole.trim()
+              ? "interview-form-error"
+              : undefined
+          }
           className={`${INPUT_CLASS} h-11`}
         />
       </div>
@@ -98,10 +122,12 @@ const InterviewSetup = ({ loading, error, onSubmit }: InterviewSetupProps) => {
           >
             Job description
           </label>
+
           <span className="text-xs tabular-nums text-slate-500">
             {jobDescription.length}/{MAX_JOB_DESCRIPTION_LENGTH}
           </span>
         </div>
+
         <textarea
           id="job-description"
           value={jobDescription}
@@ -116,6 +142,7 @@ const InterviewSetup = ({ loading, error, onSubmit }: InterviewSetupProps) => {
           disabled={loading}
           className={`${INPUT_CLASS} resize-y py-3 leading-6`}
         />
+
         <p id="job-description-hint" className="mt-1.5 text-xs text-slate-500">
           The more of the posting you include, the more relevant the questions.
         </p>
@@ -135,6 +162,7 @@ const InterviewSetup = ({ loading, error, onSubmit }: InterviewSetupProps) => {
 
       {message && (
         <div
+          id="interview-form-error"
           role="alert"
           className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700"
         >
@@ -160,6 +188,7 @@ const InterviewSetup = ({ loading, error, onSubmit }: InterviewSetupProps) => {
               aria-hidden="true"
             />
           )}
+
           {loading ? "Generating..." : "Generate questions"}
         </button>
 

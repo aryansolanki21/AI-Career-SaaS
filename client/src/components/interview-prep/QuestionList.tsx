@@ -10,7 +10,7 @@ interface QuestionListProps {
 const QuestionList = ({ questions, startNumber }: QuestionListProps) => (
   <ol className="space-y-4">
     {questions.map((question, index) => (
-      <li key={startNumber + index}>
+      <li key={question.id}>
         <QuestionCard number={startNumber + index} question={question} />
       </li>
     ))}
