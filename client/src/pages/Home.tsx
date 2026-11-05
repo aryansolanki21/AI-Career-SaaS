@@ -5,6 +5,7 @@ import HowItWorksSection from "../components/home/HowItWorksSection";
 import FAQSection from "../components/home/FAQSection";
 import CTASection from "../components/home/CTASection";
 import FooterSection from "../components/home/FooterSection";
+import PricingSection from "../components/home/PricingSection";
 
 const Home = () => {
   const { isAuth } = useAppData();
@@ -24,6 +25,8 @@ const Home = () => {
         <ToolsSection />
 
         <HowItWorksSection />
+
+        <PricingSection />
 
         <FAQSection />
 
