@@ -8,6 +8,8 @@ import resumeAnalysisRoutes from "./routes/resumeAnalysis.routes.js";
 import jobMatcherRoutes from "./routes/jobMatcher.routes.js";
 import interviewPrepRoutes from "./routes/interviewPrep.routes.js";
 import resumeBuilderRoutes from "./routes/resumeBuilder.routes.js";
+import billingRoutes from "./routes/billing.routes.js";
+import { razorpayWebhookController } from "./controllers/razorpay-webhook.controller.js";
 
 const app = express();
 const PORT = Number(process.env.PORT ?? 5000);
@@ -16,6 +18,12 @@ const CLIENT_URL = process.env.CLIENT_URL ?? "http://localhost:5173";
 app.disable("x-powered-by");
 
 app.use(cors({ origin: CLIENT_URL }));
+
+app.post(
+  "/api/billing/webhook",
+  express.raw({ type: "application/json" }),
+  razorpayWebhookController,
+);
 
 // 7 MB covers a 5 MB PDF sent as base64 (resume analysis).
 app.use(express.json({ limit: "7mb" }));
@@ -30,6 +38,7 @@ app.use("/api/ai", resumeAnalysisRoutes);
 app.use("/api/ai", jobMatcherRoutes);
 app.use("/api/ai", interviewPrepRoutes);
 app.use("/api/ai", resumeBuilderRoutes);
+app.use("/api/billing", billingRoutes);
 
 app.use((_req, res) => {
   res.status(404).json({ message: "Route not found." });
