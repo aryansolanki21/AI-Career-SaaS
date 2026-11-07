@@ -5,7 +5,7 @@ import type {
   InterviewPrepResponse,
   InterviewPrepResult,
 } from "../types/interviewPrep";
-import { getApiErrorMessage } from "../utils/apiError";
+import { getApiErrorMessage, isFreeLimitReached } from "../utils/apiError";
 
 const SERVER = import.meta.env.VITE_API_URL || "http://localhost:5000";
 const REQUEST_TIMEOUT_MS = 120_000;
@@ -14,6 +14,7 @@ export const useInterviewPrep = () => {
   const [result, setResult] = useState<InterviewPrepResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [freeLimitReached, setFreeLimitReached] = useState(false);
 
   const controllerRef = useRef<AbortController | null>(null);
   const requestIdRef = useRef(0);
@@ -27,6 +28,7 @@ export const useInterviewPrep = () => {
 
       setResult(null);
       setError("");
+      setFreeLimitReached(false);
 
       const token = localStorage.getItem("token");
 
@@ -60,6 +62,8 @@ export const useInterviewPrep = () => {
           return;
         }
 
+        setFreeLimitReached(isFreeLimitReached(err));
+
         setError(
           getApiErrorMessage(
             err,
@@ -83,6 +87,7 @@ export const useInterviewPrep = () => {
 
     setResult(null);
     setError("");
+    setFreeLimitReached(false);
     setLoading(false);
   }, []);
 
@@ -97,6 +102,7 @@ export const useInterviewPrep = () => {
     result,
     loading,
     error,
+    freeLimitReached,
     generateQuestions,
     reset,
   };

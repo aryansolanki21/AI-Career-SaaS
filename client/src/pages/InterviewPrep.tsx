@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { Download } from "lucide-react";
 import toast from "react-hot-toast";
+
 import InterviewSetup from "../components/interview-prep/InterviewSetup";
 import QuestionList from "../components/interview-prep/QuestionList";
 import QuestionPagination from "../components/interview-prep/QuestionPagination";
+import UpgradeToPro from "../components/common/UpgradeToPro";
 import {
   FOCUS_RING,
   INTERVIEW_TYPE_LABEL,
@@ -16,12 +18,12 @@ import { downloadInterviewQuestions } from "../utils/interviewPrep";
 const SECONDARY_BUTTON = `inline-flex items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50 ${FOCUS_RING}`;
 
 const InterviewPrep = () => {
-  const { result, loading, error, generateQuestions, reset } =
+  const { result, loading, error, freeLimitReached, generateQuestions, reset } =
     useInterviewPrep();
+
   const [currentPage, setCurrentPage] = useState(1);
   const questionsRef = useRef<HTMLDivElement>(null);
 
-  // Use the real list length, in case fewer questions came back than requested.
   const questions = result?.questions ?? [];
   const totalPages = Math.ceil(questions.length / QUESTIONS_PER_PAGE);
   const startIndex = (currentPage - 1) * QUESTIONS_PER_PAGE;
@@ -71,14 +73,16 @@ const InterviewPrep = () => {
           )}
         </header>
 
-        {/* Hidden, not unmounted, so your job details are kept. */}
         <div hidden={result !== null}>
           <InterviewSetup
             loading={loading}
             error={error}
+            freeLimitReached={freeLimitReached}
             onSubmit={(input) => void handleGenerate(input)}
           />
         </div>
+
+        {freeLimitReached && !loading && <UpgradeToPro />}
 
         {result && (
           <section aria-label="Generated interview questions">
@@ -88,6 +92,7 @@ const InterviewPrep = () => {
                   {INTERVIEW_TYPE_LABEL[result.interviewType]} ·{" "}
                   {questions.length} questions
                 </p>
+
                 <h2 className="mt-1 text-2xl font-bold tracking-tight text-slate-950">
                   {result.jobRole}
                 </h2>
@@ -101,6 +106,7 @@ const InterviewPrep = () => {
                 >
                   Change details
                 </button>
+
                 <button
                   type="button"
                   onClick={handleDownload}

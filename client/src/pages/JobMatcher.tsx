@@ -1,13 +1,16 @@
 import { useEffect, useRef } from "react";
+
 import JobMatchForm from "../components/job-matcher/Jobmatchform";
 import MatchResults from "../components/job-matcher/Matchresults";
+import UpgradeToPro from "../components/common/UpgradeToPro";
 import { useJobMatch } from "../hooks/useJobMatch";
 
 const JobMatcher = () => {
-  const { result, loading, error, submit, reset } = useJobMatch();
+  const { result, loading, error, freeLimitReached, submit, reset } =
+    useJobMatch();
+
   const resultsRef = useRef<HTMLDivElement>(null);
 
-  // Bring the report into view once it arrives.
   useEffect(() => {
     if (result) {
       resultsRef.current?.scrollIntoView({ block: "start" });
@@ -29,16 +32,18 @@ const JobMatcher = () => {
           </p>
         </header>
 
-        {/* Hidden, not unmounted, so the entered resume and text are kept. */}
         <div hidden={result !== null}>
           <JobMatchForm
             loading={loading}
             error={error}
+            freeLimitReached={freeLimitReached}
             onSubmit={(resume, jobDescription) =>
               void submit(resume, jobDescription)
             }
           />
         </div>
+
+        {freeLimitReached && !loading && <UpgradeToPro />}
 
         {result && (
           <div ref={resultsRef} className="scroll-mt-24">

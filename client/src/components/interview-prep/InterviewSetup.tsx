@@ -19,10 +19,16 @@ import {
 interface InterviewSetupProps {
   loading: boolean;
   error: string;
+  freeLimitReached: boolean;
   onSubmit: (input: InterviewPrepRequest) => void;
 }
 
-const InterviewSetup = ({ loading, error, onSubmit }: InterviewSetupProps) => {
+const InterviewSetup = ({
+  loading,
+  error,
+  freeLimitReached,
+  onSubmit,
+}: InterviewSetupProps) => {
   const [jobRole, setJobRole] = useState("");
   const [jobDescription, setJobDescription] = useState("");
   const [interviewType, setInterviewType] =
@@ -31,8 +37,7 @@ const InterviewSetup = ({ loading, error, onSubmit }: InterviewSetupProps) => {
     QUESTION_COUNTS[0],
   );
   const [validationError, setValidationError] = useState("");
-  
-  // Local validation messages take priority over errors from the server.
+
   const message = validationError || error;
 
   const handleSubmit: SubmitEventHandler<HTMLFormElement> = (event) => {
@@ -143,7 +148,10 @@ const InterviewSetup = ({ loading, error, onSubmit }: InterviewSetupProps) => {
           className={`${INPUT_CLASS} resize-y py-3 leading-6`}
         />
 
-        <p id="job-description-hint" className="mt-1.5 text-xs text-slate-500">
+        <p
+          id="job-description-hint"
+          className="mt-1.5 text-xs text-slate-500"
+        >
           The more of the posting you include, the more relevant the questions.
         </p>
       </div>
@@ -160,7 +168,7 @@ const InterviewSetup = ({ loading, error, onSubmit }: InterviewSetupProps) => {
         onChange={setQuestionCount}
       />
 
-      {message && (
+      {message && !freeLimitReached && (
         <div
           id="interview-form-error"
           role="alert"
@@ -171,6 +179,7 @@ const InterviewSetup = ({ loading, error, onSubmit }: InterviewSetupProps) => {
             className="mt-0.5 shrink-0"
             aria-hidden="true"
           />
+
           <p className="leading-6">{message}</p>
         </div>
       )}

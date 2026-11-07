@@ -10,15 +10,20 @@ import {
 interface JobMatchFormProps {
   loading: boolean;
   error: string;
+  freeLimitReached: boolean;
   onSubmit: (resume: File, jobDescription: string) => void;
 }
 
-const JobMatchForm = ({ loading, error, onSubmit }: JobMatchFormProps) => {
+const JobMatchForm = ({
+  loading,
+  error,
+  freeLimitReached,
+  onSubmit,
+}: JobMatchFormProps) => {
   const [resume, setResume] = useState<File | null>(null);
   const [jobDescription, setJobDescription] = useState("");
   const [validationError, setValidationError] = useState("");
 
-  // Local validation messages take priority over errors from the server.
   const message = validationError || error;
 
   const handleSubmit: SubmitEventHandler<HTMLFormElement> = (event) => {
@@ -69,6 +74,7 @@ const JobMatchForm = ({ loading, error, onSubmit }: JobMatchFormProps) => {
           >
             Job description
           </label>
+
           <span className="text-xs tabular-nums text-slate-500">
             {jobDescription.length}/{MAX_JOB_DESCRIPTION_LENGTH}
           </span>
@@ -95,7 +101,7 @@ const JobMatchForm = ({ loading, error, onSubmit }: JobMatchFormProps) => {
         </p>
       </div>
 
-      {message && (
+      {message && !freeLimitReached && (
         <div
           role="alert"
           className="flex items-start gap-3 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700"
@@ -105,6 +111,7 @@ const JobMatchForm = ({ loading, error, onSubmit }: JobMatchFormProps) => {
             className="mt-0.5 shrink-0"
             aria-hidden="true"
           />
+
           <p className="leading-6">{message}</p>
         </div>
       )}
@@ -122,6 +129,7 @@ const JobMatchForm = ({ loading, error, onSubmit }: JobMatchFormProps) => {
               aria-hidden="true"
             />
           )}
+
           {loading ? "Analysing..." : "Check match"}
         </button>
 

@@ -1,9 +1,11 @@
 import { useState } from "react";
+
 import ResumeModeSelector from "../components/resume-builder/ResumeModeSelector";
 import ResumeForm from "../components/resume-builder/ResumeForm";
 import ResumeUpload from "../components/resume-builder/ResumeUpload";
 import ResumeSectionEditor from "../components/resume-builder/ResumeSectionEditor";
 import ResumePreview from "../components/resume-builder/ResumePreview";
+import UpgradeToPro from "../components/common/UpgradeToPro";
 import { useResumeBuilder } from "../hooks/useResumeBuilder";
 import { downloadResumePDF } from "../utils/resumePdf";
 import type { ResumeBuilderMode, ResumeData } from "../types/resumeBuilder";
@@ -13,11 +15,18 @@ const ResumeBuilder = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [showEditor, setShowEditor] = useState(true);
 
-  const { resume, setResume, loading, error, generateResume, reset } =
-    useResumeBuilder();
+  const {
+    resume,
+    setResume,
+    loading,
+    error,
+    freeLimitReached,
+    generateResume,
+    reset,
+  } = useResumeBuilder();
 
   const handleModeChange = (nextMode: ResumeBuilderMode) => {
-    if (loading) return;
+    if (loading || freeLimitReached) return;
 
     reset();
     setMode(nextMode);
@@ -26,14 +35,14 @@ const ResumeBuilder = () => {
   };
 
   const handleManualGenerate = async (data: ResumeData) => {
-    if (loading) return;
+    if (loading || freeLimitReached) return;
 
     setShowEditor(true);
     await generateResume("manual", data);
   };
 
   const handleImprove = async () => {
-    if (!selectedFile || loading) return;
+    if (!selectedFile || loading || freeLimitReached) return;
 
     setShowEditor(true);
     await generateResume("improve", selectedFile);
@@ -77,13 +86,16 @@ const ResumeBuilder = () => {
               Choose how you want to create your resume
             </h2>
 
-            <ResumeModeSelector mode={mode} onChange={handleModeChange} />
+            <ResumeModeSelector
+              mode={mode}
+              onChange={handleModeChange}
+            />
 
             {mode === "manual" && (
               <div className="mt-8 border-t border-slate-100 pt-7">
                 <ResumeForm
                   onGenerate={handleManualGenerate}
-                  loading={loading}
+                  loading={loading || freeLimitReached}
                 />
               </div>
             )}
@@ -106,15 +118,19 @@ const ResumeBuilder = () => {
                 <button
                   type="button"
                   onClick={handleImprove}
-                  disabled={!selectedFile || loading}
+                  disabled={!selectedFile || loading || freeLimitReached}
                   className="w-full rounded-lg bg-blue-600 px-5 py-3 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  {loading ? "Improving Resume..." : "Improve My Resume"}
+                  {loading
+                    ? "Improving Resume..."
+                    : freeLimitReached
+                      ? "Free AI Limit Reached"
+                      : "Improve My Resume"}
                 </button>
               </div>
             )}
 
-            {error && (
+            {error && !freeLimitReached && (
               <p
                 role="alert"
                 className="mt-5 rounded-lg bg-red-50 p-3 text-sm text-red-700"
@@ -122,6 +138,8 @@ const ResumeBuilder = () => {
                 {error}
               </p>
             )}
+
+            {freeLimitReached && !loading && <UpgradeToPro />}
 
             {loading && (
               <p

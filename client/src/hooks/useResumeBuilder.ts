@@ -1,7 +1,7 @@
 import axios from "axios";
 import { useCallback, useRef, useState } from "react";
 import type { ResumeBuilderMode, ResumeData } from "../types/resumeBuilder";
-import { getApiErrorMessage } from "../utils/apiError";
+import { getApiErrorMessage, isFreeLimitReached } from "../utils/apiError";
 
 interface ResumeBuilderResponse {
   message: string;
@@ -78,6 +78,7 @@ export const useResumeBuilder = () => {
   const [resume, setResume] = useState<ResumeData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [freeLimitReached, setFreeLimitReached] = useState(false);
 
   const requestIdRef = useRef(0);
   const activeControllerRef = useRef<AbortController | null>(null);
@@ -95,6 +96,7 @@ export const useResumeBuilder = () => {
 
       if (!token) {
         setError("Please log in to use the resume builder.");
+        setFreeLimitReached(false);
         return null;
       }
 
@@ -104,6 +106,7 @@ export const useResumeBuilder = () => {
         setError(
           "Invalid input. Please check your resume details and try again.",
         );
+        setFreeLimitReached(false);
         return null;
       }
 
@@ -114,6 +117,7 @@ export const useResumeBuilder = () => {
 
       setLoading(true);
       setError("");
+      setFreeLimitReached(false);
       setResume(null);
 
       try {
@@ -148,6 +152,8 @@ export const useResumeBuilder = () => {
           return null;
         }
 
+        setFreeLimitReached(isFreeLimitReached(err));
+
         setError(
           getApiErrorMessage(
             err,
@@ -174,6 +180,7 @@ export const useResumeBuilder = () => {
 
     setResume(null);
     setError("");
+    setFreeLimitReached(false);
     setLoading(false);
   }, []);
 
@@ -182,6 +189,7 @@ export const useResumeBuilder = () => {
     setResume,
     loading,
     error,
+    freeLimitReached,
     generateResume,
     reset,
   };

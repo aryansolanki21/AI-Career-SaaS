@@ -1,37 +1,16 @@
 import axios from "axios";
 import { useCallback, useState } from "react";
 import type { JobMatchApiResponse, JobMatchResult } from "../types/jobMatcher";
+import { getApiErrorMessage, isFreeLimitReached } from "../utils/apiError";
 
 const SERVER = import.meta.env.VITE_API_URL || "http://localhost:5000";
 const REQUEST_TIMEOUT_MS = 120_000;
-
-const getErrorMessage = (error: unknown): string => {
-  if (axios.isAxiosError(error)) {
-    if (!error.response) {
-      return error.code === "ECONNABORTED"
-        ? "The request timed out. Please try again."
-        : "Unable to reach the server. Check your connection and try again.";
-    }
-
-    if (error.response.status === 401) {
-      return "Your session has expired. Please log in again.";
-    }
-
-    // The server sends a readable message for validation, quota and AI errors.
-    const message = error.response.data?.message;
-
-    if (typeof message === "string" && message.trim()) {
-      return message;
-    }
-  }
-
-  return "Something went wrong. Please try again.";
-};
 
 export const useJobMatch = () => {
   const [result, setResult] = useState<JobMatchResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [freeLimitReached, setFreeLimitReached] = useState(false);
 
   const submit = useCallback(
     async (resume: File, jobDescription: string): Promise<void> => {
@@ -39,6 +18,7 @@ export const useJobMatch = () => {
 
       if (!token) {
         setError("Please log in to use job matching.");
+        setFreeLimitReached(false);
         return;
       }
 
@@ -48,9 +28,9 @@ export const useJobMatch = () => {
 
       setLoading(true);
       setError("");
+      setFreeLimitReached(false);
 
       try {
-        // No Content-Type header: the browser adds the multipart boundary.
         const { data } = await axios.post<JobMatchApiResponse>(
           `${SERVER}/api/ai/job-matcher`,
           formData,
@@ -62,7 +42,14 @@ export const useJobMatch = () => {
 
         setResult(data.result);
       } catch (err: unknown) {
-        setError(getErrorMessage(err));
+        setFreeLimitReached(isFreeLimitReached(err));
+
+        setError(
+          getApiErrorMessage(
+            err,
+            "Unable to match your resume with the job description. Please try again.",
+          ),
+        );
       } finally {
         setLoading(false);
       }
@@ -73,7 +60,15 @@ export const useJobMatch = () => {
   const reset = useCallback(() => {
     setResult(null);
     setError("");
+    setFreeLimitReached(false);
   }, []);
 
-  return { result, loading, error, submit, reset };
+  return {
+    result,
+    loading,
+    error,
+    freeLimitReached,
+    submit,
+    reset,
+  };
 };
