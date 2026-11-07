@@ -6,7 +6,11 @@ import { HttpError } from "./http-error.js";
 
 export const FREE_REQUEST_LIMIT = 3;
 
+export const FREE_LIMIT_REACHED_CODE = "FREE_LIMIT_REACHED";
+
 export class AiQuotaExceededError extends HttpError {
+  public readonly code = FREE_LIMIT_REACHED_CODE;
+
   constructor() {
     super(
       `You have used all ${FREE_REQUEST_LIMIT} free requests. Upgrade to Pro to continue.`,

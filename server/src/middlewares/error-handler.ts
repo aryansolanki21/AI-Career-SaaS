@@ -14,19 +14,27 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
       console.error("Request error:", error);
     }
 
-    res.status(error.statusCode).json({ message: error.message });
+    res.status(error.statusCode).json({
+      message: error.message,
+      ...(error.code ? { code: error.code } : {}),
+    });
+
     return;
   }
 
   if (error instanceof multer.MulterError) {
     if (error.code === "LIMIT_FILE_SIZE") {
-      res.status(413).json({ message: "The PDF must not exceed 5 MB." });
+      res.status(413).json({
+        message: "The PDF must not exceed 5 MB.",
+      });
+
       return;
     }
 
-    res
-      .status(400)
-      .json({ message: "Upload a single PDF in the 'resume' field." });
+    res.status(400).json({
+      message: "Upload a single PDF in the 'resume' field.",
+    });
+
     return;
   }
 
@@ -34,10 +42,13 @@ export const errorHandler: ErrorRequestHandler = (error, _req, res, _next) => {
     res.status(413).json({
       message: "The request is too large. Please upload a PDF under 5 MB.",
     });
+
     return;
   }
 
   console.error("Unhandled request error:", error);
 
-  res.status(500).json({ message: "An unexpected server error occurred." });
+  res.status(500).json({
+    message: "An unexpected server error occurred.",
+  });
 };
